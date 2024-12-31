@@ -15,13 +15,18 @@ export default function LoginPage() {
     setIsLoading(true);
     setError('');
 
-    const success = await login(password);
-    if (success) {
-      // Set cookie for middleware
-      document.cookie = 'isAuthenticated=true; path=/';
-      router.push('/dashboard');
-    } else {
-      setError('รหัสผ่านไม่ถูกต้อง');
+    try {
+      const success = await login(password);
+      if (success) {
+        const params = new URLSearchParams(window.location.search);
+        const from = params.get('from') || '/dashboard';
+        router.push(from);
+      } else {
+        setError('รหัสผ่านไม่ถูกต้อง');
+      }
+    } catch (err) {
+      setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
+    } finally {
       setIsLoading(false);
     }
   };

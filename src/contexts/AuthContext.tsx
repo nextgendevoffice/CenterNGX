@@ -18,15 +18,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // เช็คสถานะ auth จาก localStorage เมื่อ reload หน้า
-    const auth = localStorage.getItem('isAuthenticated');
-    setIsAuthenticated(auth === 'true');
+    // เช็คสถานะจาก cookie แทน localStorage
+    const isAuth = document.cookie.includes('isAuthenticated=true');
+    setIsAuthenticated(isAuth);
   }, []);
 
   const login = async (password: string) => {
     if (password === '@Aa123456Aa') {
       setIsAuthenticated(true);
-      localStorage.setItem('isAuthenticated', 'true');
+      // ตั้งค่า cookie แบบ HTTP-only
+      document.cookie = 'isAuthenticated=true; path=/; max-age=86400; secure';
       return true;
     }
     return false;
@@ -34,7 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setIsAuthenticated(false);
-    localStorage.removeItem('isAuthenticated');
+    // ลบ cookie
+    document.cookie = 'isAuthenticated=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
     router.push('/login');
   };
 
