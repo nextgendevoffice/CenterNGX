@@ -24,13 +24,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = async (password: string) => {
-    if (password === '@Aa123456Aa') {
-      setIsAuthenticated(true);
-      // ตั้งค่า cookie แบบ HTTP-only
-      document.cookie = 'isAuthenticated=true; path=/; max-age=86400; secure';
-      return true;
+    try {
+      if (password === '@Aa123456Aa') {
+        // ตั้งค่า cookie ก่อน state
+        document.cookie = 'isAuthenticated=true; path=/; max-age=86400';
+        setIsAuthenticated(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {

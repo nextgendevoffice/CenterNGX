@@ -18,13 +18,13 @@ export default function LoginPage() {
     try {
       const success = await login(password);
       if (success) {
-        const params = new URLSearchParams(window.location.search);
-        const from = params.get('from') || '/dashboard';
-        router.push(from);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        router.push('/dashboard');
       } else {
         setError('รหัสผ่านไม่ถูกต้อง');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
     } finally {
       setIsLoading(false);
