@@ -12,14 +12,19 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
+    
     setIsLoading(true);
     setError('');
 
     try {
       const success = await login(password);
       if (success) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        router.push('/dashboard');
+        if (document.cookie.includes('isAuthenticated=true')) {
+          router.push('/dashboard');
+        } else {
+          throw new Error('Cookie not set');
+        }
       } else {
         setError('รหัสผ่านไม่ถูกต้อง');
       }
@@ -45,7 +50,7 @@ export default function LoginPage() {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl font-bold text-white text-center mb-8">
-            Bank Management System
+            Bank Management System V2.0
           </h1>
         </motion.div>
 

@@ -26,8 +26,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (password: string) => {
     try {
       if (password === '@Aa123456Aa') {
-        // ตั้งค่า cookie ก่อน state
-        document.cookie = 'isAuthenticated=true; path=/; max-age=86400';
+        // ตั้งค่า cookie แบบชัดเจน
+        document.cookie = `isAuthenticated=true; path=/; max-age=86400; SameSite=Strict`;
+        
+        // delay เล็กน้อยเพื่อให้ cookie ถูกตั้งค่า
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         setIsAuthenticated(true);
         return true;
       }
