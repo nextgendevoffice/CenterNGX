@@ -3,18 +3,10 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import { Chart } from 'react-chartjs-2';
 import Header from '@/components/Layout/Header';
-import { useAuth } from '@/contexts/AuthContext';
+
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
-
-  // Protected Route
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login');
-    }
-  }, [isAuthenticated, router]);
 
   const stats = [
     { label: 'บัญชีทั้งหมด', value: '2,345', icon: 'bank', color: 'blue' },
