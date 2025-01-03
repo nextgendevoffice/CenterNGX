@@ -19,15 +19,15 @@ const menuItems = [
     path: '/truewallet-status',
     icon: 'bi bi-wallet'
   },
-  {
-    title: 'Check API TrueWallet',
-    path: '/check-api-truewallet',
-    icon: 'bi bi-wallet'
-  },
   { 
     title: 'จัดการ Domain', 
     path: '/settings/domains',
     icon: 'bi bi-globe'
+  },
+  { 
+    title: 'Agent Management', 
+    path: '/agents',
+    icon: 'bi bi-people'
   },
 ];
 

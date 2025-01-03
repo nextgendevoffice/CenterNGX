@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
+import { Button } from 'react-bootstrap';
 
 interface DomainStatus {
   domain: string;
@@ -102,26 +103,73 @@ export default function TrueWalletStatusPage() {
   return (
     <div className="py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-semibold mb-6">เช็คสถานะ TrueWallet</h1>
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold mb-4">เช็คสถานะ TrueWallet</h1>
+          <div className="flex gap-4 items-center">
+            <Button 
+              href="/check-api-truewallet" 
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors duration-200"
+            >
+              <i className="bi bi-key-fill mr-2"></i>
+              ตรวจสอบ API Keys
+            </Button>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors duration-200"
+            >
+              <i className="bi bi-arrow-clockwise mr-2"></i>
+              รีเฟรช
+            </Button>
+          </div>
+        </div>
 
-        <div className="bg-white rounded-xl shadow-sm p-6">
-          <div className="grid gap-6">
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-lg font-medium text-gray-900">รายการโดเมน</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              เลือกโดเมนที่ต้องการตรวจสอบสถานะ TrueWallet
+            </p>
+          </div>
+
+          <div className="divide-y divide-gray-100">
             {domains.map((domain: { url: string; name: string }) => (
-              <div key={domain.url} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div 
+                key={domain.url} 
+                className="flex items-center justify-between p-6 hover:bg-gray-50 transition-colors duration-200"
+              >
                 <div>
-                  <h3 className="font-medium">{domain.name || domain.url}</h3>
-                  <p className="text-sm text-gray-500">{domain.url}</p>
+                  <h3 className="text-sm font-medium text-gray-900">{domain.name || domain.url}</h3>
+                  <p className="mt-1 text-sm text-gray-500">{domain.url}</p>
                 </div>
                 <button
                   onClick={() => handleCheck(domain.url)}
                   disabled={checkStatus.isPending}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors duration-200"
                 >
-                  {checkStatus.isPending ? 'กำลังตรวจสอบ...' : 'เช็คสถานะ'}
+                  {checkStatus.isPending ? (
+                    <>
+                      <div className="animate-spin -ml-1 mr-2 h-4 w-4 text-white">
+                        <i className="bi bi-arrow-repeat"></i>
+                      </div>
+                      กำลังตรวจสอบ...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-search mr-2"></i>
+                      เช็คสถานะ
+                    </>
+                  )}
                 </button>
               </div>
             ))}
           </div>
+
+          {domains.length === 0 && (
+            <div className="p-6 text-center text-gray-500">
+              <i className="bi bi-inbox text-3xl mb-2"></i>
+              <p>ไม่พบรายการโดเมน</p>
+            </div>
+          )}
         </div>
 
         {/* Modal */}
