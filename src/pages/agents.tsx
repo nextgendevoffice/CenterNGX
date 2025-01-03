@@ -51,7 +51,7 @@ export default function AgentsPage() {
     queryKey: ['agents'],
     queryFn: async () => {
       // 1. Login เพื่อรับ token
-      const loginResponse = await axios.post('http://127.0.0.1:5000/login', {
+      const loginResponse = await axios.post('https://walrus-app-5ugwj.ondigitalocean.app/login', {
         username: "df88a@ngxbot",
         password: "@Aa123456Aa"
       });
@@ -60,7 +60,7 @@ export default function AgentsPage() {
       setAccessToken(token);
       
       // 2. ใช้ token เพื่อดึงข้อมูล agents
-      const agentsResponse = await axios.post('http://127.0.0.1:5000/creditag', {
+      const agentsResponse = await axios.post('https://walrus-app-5ugwj.ondigitalocean.app/creditag', {
         token
       });
       
@@ -98,7 +98,7 @@ export default function AgentsPage() {
       token: string;
       passcode: string;
     }) => {
-      const response = await axios.post<DepositResponse>('http://127.0.0.1:5000/deposit', {
+      const response = await axios.post<DepositResponse>('https://walrus-app-5ugwj.ondigitalocean.app/deposit', {
         token,
         username,
         cur: 'THB',
@@ -201,7 +201,7 @@ export default function AgentsPage() {
     queryKey: ['profile', accessToken],
     queryFn: async () => {
       if (!accessToken) return null;
-      const response = await axios.post<ProfileResponse>('http://127.0.0.1:5000/get-profile', {
+      const response = await axios.post<ProfileResponse>('https://walrus-app-5ugwj.ondigitalocean.app/get-profile', {
         token: accessToken
       });
       return response.data;
