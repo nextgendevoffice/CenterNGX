@@ -29,6 +29,11 @@ const menuItems = [
     path: '/agents',
     icon: 'bi bi-people'
   },
+  {
+    title: 'จัดข่าวสาร',
+    path: 'https://nextgen-news-dashboard-ten.vercel.app/',
+    icon: 'bi bi-newspaper'
+  }
 ];
 
 export default function Header() {
