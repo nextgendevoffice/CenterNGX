@@ -36,6 +36,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     
     if (req.method === 'POST') {
       const { url, name } = req.body
+      
+      // เช็คว่ามี domain ที่ active อยู่หรือไม่
+      const existingDomain = await prisma.domain.findFirst({
+        where: {
+          url,
+          isActive: true
+        }
+      })
+
+      if (existingDomain) {
+        return res.status(400).json({ message: 'Domain นี้มีอยู่ในระบบแล้ว' })
+      }
+
       const domain = await prisma.domain.create({
         data: { url, name },
         select: {
