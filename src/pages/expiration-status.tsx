@@ -63,6 +63,18 @@ export default function ExpirationStatusPage() {
     }
   }, [domains]);
 
+  // เพิ่มการเรียงลำดับข้อมูล
+  const sortedServices = [...services].sort((a, b) => {
+    // ถ้ามี error ให้แสดงท้ายสุด
+    if (a.error && !b.error) return 1;
+    if (!a.error && b.error) return -1;
+    
+    // เรียงตาม days_left จากน้อยไปมาก
+    const daysA = a.expiration?.days_left ?? Infinity;
+    const daysB = b.expiration?.days_left ?? Infinity;
+    return daysA - daysB;
+  });
+
   if (isLoadingDomains) {
     return <Loading text="กำลังโหลดข้อมูล..." />;
   }
@@ -82,7 +94,7 @@ export default function ExpirationStatusPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service, index) => (
+          {sortedServices.map((service, index) => (
             <motion.div
               key={service.url}
               initial={{ opacity: 0, y: 20 }}
@@ -93,7 +105,7 @@ export default function ExpirationStatusPage() {
                   ? 'border-red-500'
                   : service.expiration?.is_expired
                   ? 'border-red-500'
-                  : (service.expiration?.days_left ?? 0) < 30
+                  : (service.expiration?.days_left ?? 0) <= 3
                   ? 'border-yellow-500'
                   : 'border-green-500'
               }`}
@@ -148,7 +160,7 @@ export default function ExpirationStatusPage() {
                     </div>
                   </div>
 
-                  {(service.expiration?.days_left ?? 0) < 30 && !service.expiration?.is_expired && (
+                  {(service.expiration?.days_left ?? 0) <= 3 && !service.expiration?.is_expired && (
                     <div className="mt-4 text-sm text-yellow-600">
                       <i className="bi bi-exclamation-triangle mr-2"></i>
                       ใกล้หมดอายุ กรุณาต่ออายุเร็วๆ นี้
