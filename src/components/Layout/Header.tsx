@@ -38,6 +38,11 @@ const menuItems = [
         title: 'Agent Management', 
         path: '/agents',
         icon: 'bi bi-people'
+      },
+      {
+        title: 'อัพเดทฐานข้อมูล',
+        path: '/settings/update-database',
+        icon: 'bi bi-database-gear'
       }
     ]
   },
