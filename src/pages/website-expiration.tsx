@@ -3,15 +3,27 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { motion } from 'framer-motion';
+import Swal from 'sweetalert2';
 
 interface Domain {
   url: string;
   name: string;
 }
 
+// เพิ่ม interface ExpirationResponse
+interface ExpirationResponse {
+  message: string;
+  data: {
+    days_added: number;
+    old_expire_date: string;
+    new_expire_date: string;
+    next_billing_date: string;
+  };
+  success: boolean;
+}
+
 interface ExpirationFormData {
   serviceUrl: string;
-  days: number;
   remark: string;
   created_by_name: string;
 }
@@ -19,7 +31,6 @@ interface ExpirationFormData {
 export default function WebsiteExpirationPage() {
   const [formData, setFormData] = useState<ExpirationFormData>({
     serviceUrl: '',
-    days: 30,
     remark: '',
     created_by_name: ''
   });
@@ -33,30 +44,61 @@ export default function WebsiteExpirationPage() {
   // Mutation สำหรับอัพเดทวันหมดอายุ
   const updateExpiration = useMutation({
     mutationFn: async (data: ExpirationFormData) => {
-      const response = await axios.post(`${data.serviceUrl}/api/admin/website-expiration/add`, {
-        days: data.days,
+      const response = await axios.post<ExpirationResponse>(`${data.serviceUrl}/api/admin/website-expiration/add`, {
         remark: data.remark,
         created_by_name: data.created_by_name
       });
       return response.data;
     },
-    onSuccess: () => {
-      toast.success('อัพเดทวันหมดอายุสำเร็จ');
+    onSuccess: (response) => {
+      // แสดง Popup แทน Modal
+      Swal.fire({
+        title: response.message,
+        html: `
+          <div class="space-y-3 text-left">
+            <div>
+              <p class="text-sm text-gray-600">จำนวนวันที่เพิ่ม:</p>
+              <p class="font-medium">${response.data.days_added} วัน</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">วันหมดอายุเดิม:</p>
+              <p class="font-medium">${new Date(response.data.old_expire_date).toLocaleDateString('th-TH')}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">วันหมดอายุใหม่:</p>
+              <p class="font-medium">${new Date(response.data.new_expire_date).toLocaleDateString('th-TH')}</p>
+            </div>
+            <div>
+              <p class="text-sm text-gray-600">วันที่ต้องต่ออายุครั้งถัดไป:</p>
+              <p class="font-medium">${new Date(response.data.next_billing_date).toLocaleDateString('th-TH')}</p>
+            </div>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonText: 'ปิด',
+        confirmButtonColor: '#3B82F6', // blue-600
+      });
+
       setFormData({
         serviceUrl: '',
-        days: 30,
         remark: '',
         created_by_name: ''
       });
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'เกิดข้อผิดพลาดในการอัพเดท');
+      Swal.fire({
+        title: 'เกิดข้อผิดพลาด',
+        text: error.response?.data?.message || 'เกิดข้อผิดพลาดในการอัพเดท',
+        icon: 'error',
+        confirmButtonText: 'ปิด',
+        confirmButtonColor: '#EF4444', // red-500
+      });
     }
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.serviceUrl || !formData.days || !formData.created_by_name) {
+    if (!formData.serviceUrl || !formData.created_by_name) {
       toast.error('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
@@ -91,24 +133,6 @@ export default function WebsiteExpirationPage() {
                     {domain.name || domain.url}
                   </option>
                 ))}
-              </select>
-            </div>
-
-            {/* จำนวนวัน */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                จำนวนวัน
-              </label>
-              <select
-                value={formData.days}
-                onChange={(e) => setFormData(prev => ({ ...prev, days: Number(e.target.value) }))}
-                className="w-full rounded-lg border-gray-300"
-                required
-              >
-                <option value={30}>30 วัน</option>
-                <option value={90}>90 วัน</option>
-                <option value={180}>180 วัน</option>
-                <option value={365}>365 วัน</option>
               </select>
             </div>
 

@@ -31,7 +31,8 @@
     "react-error-boundary": "^5.0.0",
     "react-hot-toast": "^2.5.1",
     "request": "^2.88.2",
-    "request-promise": "^4.2.6"
+    "request-promise": "^4.2.6",
+    "sweetalert2": "^11.15.10"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
