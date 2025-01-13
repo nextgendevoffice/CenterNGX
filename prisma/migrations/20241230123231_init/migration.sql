@@ -8,8 +8,5 @@ CREATE TABLE "Domain" (
     "updatedAt" DATETIME NOT NULL
 );
 
--- DropIndex
-DROP INDEX IF EXISTS "Domain_url_key";
-
 -- CreateIndex
-CREATE UNIQUE INDEX "Domain_url_isActive_key" ON "Domain"("url", "isActive") WHERE isActive = true;
+CREATE UNIQUE INDEX "Domain_url_isActive_key" ON "Domain"("url", "isActive");
