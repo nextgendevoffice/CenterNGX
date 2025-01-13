@@ -5,6 +5,13 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 const prisma = global.prisma || new PrismaClient()
 if (process.env.NODE_ENV === 'development') global.prisma = prisma
 
+interface Domain {
+  id: number
+  url: string
+  name: string
+  isActive: boolean
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     if (req.method === 'GET') {
@@ -12,12 +19,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         where: { isActive: true },
         orderBy: { createdAt: 'desc' },
         select: {
+          id: true,
           url: true,
           name: true
         }
       })
       
       const formattedDomains = domains.map((domain: any) => ({
+        id: domain.id,
         url: domain.url,
         name: domain.name || domain.url.replace('https://', '').replace('http://', '')
       }))

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'react-hot-toast'
 
 interface Domain {
   id: number
@@ -29,6 +30,21 @@ export default function DomainsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['domains'] })
       setNewDomain({ url: '', name: '' })
+    }
+  })
+
+  // เพิ่ม mutation สำหรับลบ domain
+  const deleteDomain = useMutation({
+    mutationFn: (id: number) =>
+      fetch(`/api/domains/${id}`, {
+        method: 'DELETE'
+      }).then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['domains'] })
+      toast.success('ลบ Domain สำเร็จ')
+    },
+    onError: () => {
+      toast.error('เกิดข้อผิดพลาดในการลบ Domain')
     }
   })
 
@@ -93,12 +109,22 @@ export default function DomainsPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {Array.isArray(domains) && domains.map((domain: { url: string; name: string }, index: number) => (
-                <tr key={index}>
+              {Array.isArray(domains) && domains.map((domain: Domain) => (
+                <tr key={domain.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{domain.url}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{domain.name || '-'}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-red-600 hover:text-red-900">ลบ</button>
+                    <button 
+                      onClick={() => {
+                        if (window.confirm('คุณต้องการลบ Domain นี้ใช่หรือไม่?')) {
+                          deleteDomain.mutate(domain.id)
+                        }
+                      }}
+                      className="text-red-600 hover:text-red-900"
+                      disabled={deleteDomain.isPending}
+                    >
+                      {deleteDomain.isPending ? 'กำลังลบ...' : 'ลบ'}
+                    </button>
                   </td>
                 </tr>
               ))}
