@@ -22,6 +22,11 @@ const menuItems = [
         title: 'TrueWallet Status',
         path: '/truewallet-status',
         icon: 'bi bi-wallet'
+      },
+      {
+        title: 'SCB API Tester',
+        path: '/scb-api-tester',
+        icon: 'bi bi-wallet'
       }
     ]
   },
@@ -38,6 +43,11 @@ const menuItems = [
         title: 'Agent Management', 
         path: '/agents',
         icon: 'bi bi-people'
+      },
+      {
+        title: 'Agent Report',
+        path: '/performance-report',
+        icon: 'bi bi-graph-up'
       },
       {
         title: 'อัพเดทฐานข้อมูล',
