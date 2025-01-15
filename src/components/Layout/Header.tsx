@@ -27,6 +27,11 @@ const menuItems = [
         title: 'SCB API Tester',
         path: '/scb-api-tester',
         icon: 'bi bi-wallet'
+      },
+      {
+        title: 'OKX Balance',
+        path: '/okx-balance',
+        icon: 'bi bi-wallet'
       }
     ]
   },
@@ -39,8 +44,19 @@ const menuItems = [
         path: '/settings/domains',
         icon: 'bi bi-globe'
       },
-      { 
-        title: 'Agent Management', 
+      {
+        title: 'อัพเดทฐานข้อมูล',
+        path: '/settings/update-database',
+        icon: 'bi bi-database-gear'
+      }
+    ]
+  },
+  {
+    title: 'จัดการ Agent',
+    icon: 'bi bi-people',
+    submenu: [
+      {
+        title: 'Agent Management',
         path: '/agents',
         icon: 'bi bi-people'
       },
@@ -48,11 +64,6 @@ const menuItems = [
         title: 'Agent Report',
         path: '/performance-report',
         icon: 'bi bi-graph-up'
-      },
-      {
-        title: 'อัพเดทฐานข้อมูล',
-        path: '/settings/update-database',
-        icon: 'bi bi-database-gear'
       }
     ]
   },

@@ -34,6 +34,13 @@ export default function DashboardPage() {
           path: '/scb-api-tester',
           icon: 'wallet',
           color: 'purple'
+        },
+        {
+          title: 'OKX Balance',
+          description: 'ตรวจสอบยอดเงิน OKX',
+          path: '/okx-balance',
+          icon: 'wallet',
+          color: 'blue'
         }
       ]
     },
