@@ -152,7 +152,11 @@ export default function PerformanceReportPage() {
               <PerformanceChart data={chartData} />
             </div>
 
-            <PerformanceTable agents={agentData} />
+            <PerformanceTable 
+              agents={agentData} 
+              startDate={startDate}
+              endDate={endDate}
+            />
           </div>
         </div>
       )}
