@@ -142,7 +142,7 @@ export default function PerformanceReportPage() {
           </div>
 
           {/* Date Picker Section */}
-          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-lg p-6 border border-gray-100">
+          <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-lg p-6 border border-gray-100 relative z-50">
             <DateRangePicker
               startDate={startDate}
               endDate={endDate}

@@ -1,3 +1,26 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities; 
+@tailwind utilities;
+
+/* Add these styles to your global CSS */
+.capturing {
+  background: white !important;
+  border-radius: 0 !important;
+}
+
+.capturing * {
+  border-radius: 0.5rem !important;
+}
+
+.capturing .group-hover\:opacity-100 {
+  opacity: 0 !important;
+}
+
+.react-datepicker-popper {
+  z-index: 50 !important;
+}
+
+.react-datepicker-wrapper {
+  z-index: 50;
+  position: relative;
+}

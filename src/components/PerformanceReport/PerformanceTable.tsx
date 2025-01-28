@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '@headlessui/react';
+import html2canvas from 'html2canvas';
 
 interface Column {
   key: keyof Agent | 'name';
@@ -159,6 +160,8 @@ export default function PerformanceTable({ agents, startDate, endDate }: Perform
   const [usdtRate, setUsdtRate] = useState<number>(35); // Default USDT rate
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const [isCapturing, setIsCapturing] = useState<boolean>(false);
 
   const columns: Column[] = [
     { key: 'name', label: 'ชื่อเอเย่นต์' },
@@ -272,6 +275,41 @@ export default function PerformanceTable({ agents, startDate, endDate }: Perform
     return 0;
   });
 
+  // ฟังก์ชันสำหรับ capture screenshot
+  const captureTable = async () => {
+    if (!tableRef.current) return;
+    
+    try {
+      setIsCapturing(true);
+      
+      // เพิ่ม class สำหรับ styling ขณะ capture
+      tableRef.current.classList.add('capturing');
+      
+      const canvas = await html2canvas(tableRef.current, {
+        scale: 2, // เพิ่มความคมชัด
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+        allowTaint: true,
+      });
+      
+      // สร้าง link สำหรับดาวน์โหลด
+      const link = document.createElement('a');
+      link.download = `performance-report-${new Date().toISOString().split('T')[0]}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+    } catch (error) {
+      console.error('Failed to capture screenshot:', error);
+    } finally {
+      // ลบ class styling หลัง capture เสร็จ
+      if (tableRef.current) {
+        tableRef.current.classList.remove('capturing');
+      }
+      setIsCapturing(false);
+    }
+  };
+
   return (
     <div className="bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl overflow-hidden border border-gray-100">
       <div className="p-6">
@@ -293,6 +331,19 @@ export default function PerformanceTable({ agents, startDate, endDate }: Perform
               <span className="text-sm text-gray-500">฿</span>
             </div>
             
+            <button
+              onClick={captureTable}
+              disabled={isCapturing}
+              className={`px-4 py-2 rounded-lg transition-all duration-300 flex items-center space-x-2
+                ${isCapturing 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-green-50 text-green-600 hover:bg-green-100'
+                }`}
+            >
+              <i className={`bi ${isCapturing ? 'bi-hourglass-split animate-spin' : 'bi-camera'}`}></i>
+              <span>{isCapturing ? 'กำลังบันทึก...' : 'Screenshot'}</span>
+            </button>
+
             <button className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition-colors">
               <i className="bi bi-download mr-2"></i>
               Export Excel
@@ -309,153 +360,165 @@ export default function PerformanceTable({ agents, startDate, endDate }: Perform
           <span>อัตราแลกเปลี่ยน: 1 USDT = {usdtRate} บาท</span>
         </div>
         
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead>
-              <tr className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                {columns.map((column) => (
-                  <th
-                    key={column.key}
-                    onClick={() => handleSort(column.key)}
-                    className="px-6 py-4 text-left text-sm font-semibold text-gray-600 cursor-pointer group"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <span className="group-hover:text-indigo-600 transition-colors">
-                        {column.label}
-                      </span>
-                      {sortConfig.key === column.key && (
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="text-indigo-500"
-                        >
-                          {sortConfig.direction === 'asc' ? '↑' : '↓'}
-                        </motion.span>
-                      )}
-                    </div>
+        <div ref={tableRef} className="relative">
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead>
+                <tr className="bg-gradient-to-r from-indigo-50 to-purple-50">
+                  {columns.map((column) => (
+                    <th
+                      key={column.key}
+                      onClick={() => handleSort(column.key)}
+                      className="px-6 py-4 text-left text-sm font-semibold text-gray-600 cursor-pointer group"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <span className="group-hover:text-indigo-600 transition-colors">
+                          {column.label}
+                        </span>
+                        {sortConfig.key === column.key && (
+                          <motion.span
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            className="text-indigo-500"
+                          >
+                            {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                          </motion.span>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                  <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">
+                    Actions
                   </th>
-                ))}
-                <th className="px-6 py-4 text-right text-sm font-semibold text-gray-600">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {sortedAgents.map((agent, index) => (
-                <motion.tr
-                  key={agent._id._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="group hover:bg-gradient-to-r hover:from-indigo-50/30 hover:to-purple-50/30 transition-all duration-300"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-10 w-10 flex-shrink-0">
-                        <div className="h-full w-full rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 flex items-center justify-center text-white font-semibold">
-                          {agent._id.name.charAt(0)}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {sortedAgents.map((agent, index) => (
+                  <motion.tr
+                    key={agent._id._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                    className="group hover:bg-gradient-to-r hover:from-indigo-50/30 hover:to-purple-50/30 transition-all duration-300"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 flex-shrink-0">
+                          <div className="h-full w-full rounded-full bg-gradient-to-r from-indigo-400 to-purple-400 flex items-center justify-center text-white font-semibold">
+                            {agent._id.name.charAt(0)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{agent._id.name}</div>
+                          <div className="text-sm text-gray-500">{agent._id.username}</div>
                         </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">{agent._id.name}</div>
-                        <div className="text-sm text-gray-500">{agent._id.username}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className={`text-sm font-medium ${
+                        agent.agentTotal >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        ฿{agent.agentTotal.toLocaleString()}
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${
-                      agent.agentTotal >= 0 ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      ฿{agent.agentTotal.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      ({convertToUSDT(agent.agentTotal)} USDT)
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${
-                      agent.companyWl >= 0 ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      ฿{agent.companyWl.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      ({convertToUSDT(agent.companyWl)} USDT)
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`text-sm font-medium ${
-                      agent.memberTotal >= 0 ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      ฿{agent.memberTotal.toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      ({convertToUSDT(agent.memberTotal)} USDT)
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      ฿{Math.abs(agent.betAmt).toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500 mb-1">
-                      ({convertToUSDT(Math.abs(agent.betAmt))} USDT)
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div 
-                        className="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full"
-                        style={{ width: `${(Math.abs(agent.validAmt) / Math.abs(agent.betAmt)) * 100}%` }}
-                      ></div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      ฿{Math.abs(agent.validAmt).toLocaleString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      ({convertToUSDT(Math.abs(agent.validAmt))} USDT)
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {((Math.abs(agent.validAmt) / Math.abs(agent.betAmt)) * 100).toFixed(2)}%
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                      agent.winLoseTotal >= 0 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {((agent.winLoseTotal / Math.abs(agent.betAmt)) * 100).toFixed(2)}%
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      ฿{agent.winLoseTotal.toLocaleString()}
-                      <br />
-                      ({convertToUSDT(agent.winLoseTotal)} USDT)
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right">
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2 justify-end">
-                      <button
-                        onClick={() => handleCopy(agent)}
-                        className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-md hover:shadow-lg"
-                      >
-                        <i className="bi bi-clipboard mr-1"></i>
-                        คัดลอก
-                      </button>
-                      <button 
-                        onClick={() => {
-                          setSelectedAgent(agent);
-                          setIsDetailModalOpen(true);
-                        }}
-                        className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
-                      >
-                        <i className="bi bi-eye mr-1"></i>
-                        ดูรายละเอียด
-                      </button>
-                    </div>
-                  </td>
-                </motion.tr>
-              ))}
-            </tbody>
-          </table>
+                      <div className="text-xs text-gray-500">
+                        ({convertToUSDT(agent.agentTotal)} USDT)
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className={`text-sm font-medium ${
+                        agent.companyWl >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        ฿{agent.companyWl.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ({convertToUSDT(agent.companyWl)} USDT)
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className={`text-sm font-medium ${
+                        agent.memberTotal >= 0 ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        ฿{agent.memberTotal.toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ({convertToUSDT(agent.memberTotal)} USDT)
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        ฿{Math.abs(agent.betAmt).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500 mb-1">
+                        ({convertToUSDT(Math.abs(agent.betAmt))} USDT)
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div 
+                          className="bg-gradient-to-r from-indigo-500 to-purple-500 h-1.5 rounded-full"
+                          style={{ width: `${(Math.abs(agent.validAmt) / Math.abs(agent.betAmt)) * 100}%` }}
+                        ></div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        ฿{Math.abs(agent.validAmt).toLocaleString()}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        ({convertToUSDT(Math.abs(agent.validAmt))} USDT)
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {((Math.abs(agent.validAmt) / Math.abs(agent.betAmt)) * 100).toFixed(2)}%
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                        agent.winLoseTotal >= 0 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {((agent.winLoseTotal / Math.abs(agent.betAmt)) * 100).toFixed(2)}%
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        ฿{agent.winLoseTotal.toLocaleString()}
+                        <br />
+                        ({convertToUSDT(agent.winLoseTotal)} USDT)
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2 justify-end">
+                        <button
+                          onClick={() => handleCopy(agent)}
+                          className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 shadow-md hover:shadow-lg"
+                        >
+                          <i className="bi bi-clipboard mr-1"></i>
+                          คัดลอก
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setSelectedAgent(agent);
+                            setIsDetailModalOpen(true);
+                          }}
+                          className="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
+                        >
+                          <i className="bi bi-eye mr-1"></i>
+                          ดูรายละเอียด
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Overlay while capturing */}
+          {isCapturing && (
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center">
+              <div className="flex items-center space-x-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <span className="text-indigo-600 font-medium">กำลังบันทึกภาพ...</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="mt-6 flex items-center justify-between">
